@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agenda</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 5px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    button {
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Agenda de contactos</h1>
+
+  <h2>Listado de contactos</h2>
+  <ul id="contact-list"></ul>
+
+  <h2>Agregar nuevo contacto</h2>
+  <form id="add-contact-form">
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" required><br>
+
+    <label for="apellido">Apellido:</label>
+    <input type="text" id="apellido" required><br>
+
+    <label for="telefono">Teléfono:</label>
+    <input type="text" id="telefono" required><br>
+
+    <button type="submit">Guardar</button>
+  </form>
+
+  <script>
+    // Función para cargar los contactos desde la agenda
+    function cargarContactos() {
+      fetch('http://www.raydelto.org/agenda.php')
+        .then(response => response.json())
+        .then(data => {
+          const contactList = document.getElementById('contact-list');
+          contactList.innerHTML = '';
+
+          data.forEach(contacto => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${contacto.nombre} ${contacto.apellido} - ${contacto.telefono}`;
+            contactList.appendChild(listItem);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar los contactos:', error);
+        });
+    }
+
+    // Función para agregar un nuevo contacto a la agenda
+    function agregarContacto(event) {
+      event.preventDefault();
+
+      const nombre = document.getElementById('nombre').value;
+      const apellido = document.getElementById('apellido').value;
+      const telefono = document.getElementById('telefono').value;
+
+      const nuevoContacto = {
+        nombre: nombre,
+        apellido: apellido,
+        telefono: telefono
+      };
+
+      fetch('http://www.raydelto.org/agenda.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevoContacto)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Contacto agregado:', data);
+          // Limpiar el formulario después de agregar el contacto
+          document.getElementById('add-contact-form').reset();
+          // Volver a cargar los contactos para mostrar el nuevo contacto en la lista
+          cargarContactos();
+        })
+        .catch(error => {
+          console.error('Error al agregar el contacto:', error);
+        });
+    }
+
+    // Cargar los contactos al cargar la página
+    cargarContactos();
+
+    // Agregar el evento de envío del formulario para agregar un contacto
+    document.getElementById('add-contact-form').addEventListener('submit', agregarContacto);
+  </script>
+</body>
+</html>
